@@ -3,17 +3,19 @@ import os
 from fastapi import FastAPI
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from fastapi.middleware.cors import CORSM
+from fastapi.middleware.cors import CORSMiddleware
 import logging
-from fastapi import FastAPI, HTTPExceptioniddleware
+from fastapi import FastAPI, HTTPException
+import traceback
+from fastapi.responses import JSONResponse
+
+app = FastAPI()
 
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
-app = FastAPI()
 
 # ✅ Fix CORS issue: Allow frontend (Netlify) to call backend (Render)
 app.add_middleware(
@@ -73,33 +75,80 @@ async def correct_text(request: CorrectRequest):
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 # 2️⃣ Content Structuring & Enhancement
-@app.post("/enhance/")
-async def enhance_text(request: TextRequest):
-    model = genai.GenerativeModel("gemini-pro")
-    prompt = f"Improve the structure and readability of this text: {request.text}"
-    response = model.generate_content(prompt)
-    return {"enhanced_text": response.text}
+
+app = FastAPI()
+
+class EnhanceRequest(BaseModel):
+    text: str
+    tone: str = "Neutral"
+    style: str = "Standard"
+
+@app.post("/enhance")
+async def enhance_text(request: EnhanceRequest):
+    try:
+        enhanced_text = f"Enhanced: '{request.text}' with {request.tone} tone and {request.style} style."
+        return {"enhanced_text": enhanced_text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # 3️⃣ Writing Style Analysis (Clarity, Tone, Readability)
-@app.post("/analyze/")
-async def analyze_text(request: TextRequest):
-    model = genai.GenerativeModel("gemini-pro")
-    prompt = f"Analyze the following text and provide feedback on clarity, tone, and readability: {request.text}"
-    response = model.generate_content(prompt)
-    return {"analysis": response.text}
+class StyleAnalysisRequest(BaseModel):
+     text: str
 
+@app.post("/analyze_style/")
+async def analyze_writing_style(request: StyleAnalysisRequest):
+    try:
+        logger.info(f"Received request: {request.dict()}")  # Log input request
+
+        # Simulated style analysis logic (Replace with AI model)
+        clarity_score = 85  # Mock clarity score
+        tone_analysis = "Formal"  # Mock tone classification
+        readability = "Grade 9 Level"  # Mock readability level
+
+        logger.info(f"Returning style analysis: Clarity={clarity_score}, Tone={tone_analysis}, Readability={readability}")
+        return {
+            "clarity_score": clarity_score,
+            "tone_analysis": tone_analysis,
+            "readability": readability
+        }
+
+    except Exception as e:
+        logger.error(f"Error in /analyze_style/: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 # 4️⃣ Summarization & Paraphrasing
+class SummarizeRequest(BaseModel):
+    text: str
+
 @app.post("/summarize/")
-async def summarize_text(request: TextRequest):
-    model = genai.GenerativeModel("gemini-pro")
-    prompt = f"Summarize the following text in a concise way: {request.text}"
-    response = model.generate_content(prompt)
-    return {"summary": response.text}
+async def summarize_text(request: SummarizeRequest):
+    try:
+        logger.info(f"Received request: {request.dict()}")  # Log input request
+
+        # Simulated summarization logic (Replace with AI model)
+        summary = f"Summary: {request.text[:50]}..."  # Mock response
+
+        logger.info(f"Returning summary: {summary}")
+        return {"summary": summary}
+
+    except Exception as e:
+        logger.error(f"Error in /summarize/: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+class ParaphraseRequest(BaseModel):
+    text: str
 
 @app.post("/paraphrase/")
-async def paraphrase_text(request: TextRequest):
-    model = genai.GenerativeModel("gemini-pro")
-    prompt = f"Paraphrase this text while keeping the original meaning: {request.text}"
-    response = model.generate_content(prompt)
-    return {"paraphrased_text": response.text}
+async def paraphrase_text(request: ParaphraseRequest):
+    try:
+        logger.info(f"Received request: {request.dict()}")  # Log input request
+
+        # Simulate paraphrasing logic
+        paraphrased_text = f"Paraphrased version of: {request.text}"
+
+        logger.info(f"Returning paraphrased text: {paraphrased_text}")
+        return {"paraphrased_text": paraphrased_text}
+
+    except Exception as e:
+        logger.error(f"Error in /paraphrase/: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
