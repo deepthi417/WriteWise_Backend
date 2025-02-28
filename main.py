@@ -15,7 +15,7 @@ app = FastAPI()
 # ✅ Fix CORS issue: Allow frontend (Netlify) to call backend (Render)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change this to ["https://yourfrontend.netlify.app"] if needed
+    allow_origins=["https://classy-praline-d16c54.netlify.app"],  # Change this to ["https://yourfrontend.netlify.app"] if needed
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
