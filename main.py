@@ -3,7 +3,15 @@ import os
 from fastapi import FastAPI
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSM
+import logging
+from fastapi import FastAPI, HTTPExceptioniddleware
+
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 app = FastAPI()
 
@@ -38,13 +46,31 @@ class TextRequest(BaseModel):
 def read_root():
     return {"message": "WriteWise AI Agent is running!"}
 
+
+# Your existing request model
+class CorrectRequest(BaseModel):
+    text: str
+    tone: str
+    style: str
+    audience: str
+
+
 # 1️⃣ Grammar & Spelling Correction
-@app.post("/correct/")
-async def correct_text(request: TextRequest):
-    model = genai.GenerativeModel("gemini-pro")
-    prompt = f"Correct grammar and spelling in this text: {request.text}"
-    response = model.generate_content(prompt)
-    return {"corrected_text": response.text}
+@app.post("/correct")
+async def correct_text(request: CorrectRequest):
+    try:
+        logger.info(f"Received request: {request.dict()}")  # Log the incoming request
+
+        # --- Your existing AI logic here ---
+        corrected_text = request.text.upper()  # Example logic (Replace with actual AI processing)
+        # ------------------------------------
+
+        logger.info(f"Returning response: {corrected_text}")  # Log the response
+        return {"corrected_text": corrected_text}
+    
+    except Exception as e:
+        logger.error(f"Error in /correct endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 # 2️⃣ Content Structuring & Enhancement
 @app.post("/enhance/")
