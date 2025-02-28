@@ -116,23 +116,21 @@ async def analyze_writing_style(request: StyleAnalysisRequest):
         logger.error(f"Error in /analyze_style/: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 # 4️⃣ Summarization & Paraphrasing
-class SummarizeRequest(BaseModel):
+class TextInput(BaseModel):
     text: str
 
 @app.post("/summarize/")
-async def summarize_text(request: SummarizeRequest):
+def summarize_text(input_data: TextInput):
+    if not input_data.text:
+        raise HTTPException(status_code=422, detail="Text input is required")
+    
     try:
-        logger.info(f"Received request: {request.dict()}")  # Log input request
-
-        # Simulated summarization logic (Replace with AI model)
-        summary = f"Summary: {request.text[:50]}..."  # Mock response
-
-        logger.info(f"Returning summary: {summary}")
+        # Fake summarization logic for testing
+        summary = "This is a summary: " + input_data.text
         return {"summary": summary}
 
     except Exception as e:
-        logger.error(f"Error in /summarize/: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=500, detail=str(e))
 
 class ParaphraseRequest(BaseModel):
     text: str
