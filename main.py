@@ -12,11 +12,6 @@ from fastapi.responses import JSONResponse
 app = FastAPI()
 
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-
 # ✅ Fix CORS issue: Allow frontend (Netlify) to call backend (Render)
 app.add_middleware(
     CORSMiddleware,
@@ -25,6 +20,35 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+import logging
+from fastapi import FastAPI, HTTPException
+
+# Setting up logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
+
+# Create FastAPI instance
+app = FastAPI()
+
+@app.get("/items/{item_id}")
+def read_item(item_id: int):
+    logger.info(f"Received request for item with ID: {item_id}")  # Log the request
+    return {"item_id": item_id}
+
+@app.post("/items/")
+def create_item(item: dict):
+    logger.info(f"Creating new item: {item}")  # Log the creation
+    return {"message": "Item created", "item": item}
+
+@app.get("/cause-error")
+def cause_error():
+    try:
+        # Simulate an error (ZeroDivisionError)
+        1 / 0
+    except ZeroDivisionError as e:
+        logger.error(f"Error occurred: {str(e)}")  # Log the error
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @app.get("/")
 def home():
